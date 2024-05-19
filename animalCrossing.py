@@ -31,7 +31,7 @@ class Button:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 if self.rect.collidepoint(event.pos):
-                    global selected_number
+                    global selected_number 
                     selected_number = self.num
                     print(self.num,"번 선택" )
 
@@ -111,6 +111,7 @@ class Player:
             self.money = 0
         self.playerList=[]
         self.collection=[]
+        self.picknumber=[]
 
     
 
@@ -351,6 +352,10 @@ class PlayGame(Game): # 직접 플레이할때
             ]
         
         self.player.playerList.append(self.playerBtns[0]) # 초기에 0번째 캐릭터는 가지고 있음
+        # playerList는 실제로 구매를 해서, 가지고 있는 캐릭터.(초기에 0번째 캐릭터를 가지고 있는다.)
+        print(self.player.playerList[0].name)
+        print(self.player.playerList[0].num)
+        # 이상해씨를 가지고 있음, num은 0(selected_buying_number도 0)
         
         self.player_rect = self.player.rect
 
@@ -374,14 +379,19 @@ class PlayGame(Game): # 직접 플레이할때
                     running = False
                     #for btn in self.playerBtns:
                         #btn.handle_buy_event(event, self.player)  # player 객체를 인자로 전달
+
+                    # event.type이 QUIT이면, running을 False로 두기.
+
                 # 팔기 혹은 구매 때 유저 입력 받기
                 elif event.type == self.pygame.KEYDOWN:
+                    # 만약, event.type이 KEYDOWN이라면
                     if event.unicode.isnumeric():
                         global selected_selling_number
                         selected_selling_number = int(event.unicode)
                         if selected_selling_number + 1<= len(self.player.collection):
                             print(selected_selling_number)
                             selling_thing, now_money = self.player.sell()
+                            # selling_thing은 판 것, now_money는 팔아서 얻은 돈.
                             self.show_message(f"{selling_thing.name}을 팔아서 {selling_thing.getPrice()}을 벌었다!, 현재 잔고: {now_money}")
                         else:
                             self.show_message("유효한 번호를 입력해주세요!")
@@ -389,7 +399,8 @@ class PlayGame(Game): # 직접 플레이할때
                 
                 for player_btn in self.playerBtns:
                     player_btn.handle_buy_event(event)
-
+                    # playerBtns 안에 있는 player_btn에 대해서, 전부, handle_buy_event(event)를 실행.
+                    # 즉, 무얼 누르는지에 따라, selected_buying_number를 갱신하겠다는 의미.
         
 
             # 주인공 이동 처리
@@ -507,15 +518,24 @@ class PlayGame(Game): # 직접 플레이할때
 
                     topleft_rect = pygame.Rect(playerBtn.rect.topleft, (0, 0))
                     self.screen.blit(isHaving_text, (topleft_rect.x + 30, topleft_rect.y + 120))
+                
+
 
                 if selected_buying_number is not None:
+                    # 무언가 선택되었을 때.
                     if self.player.money >= 10000:
-                        self.player.playerList.append(self.player.createMemento(self.playerBtns[selected_buying_number])) #메멘토 패턴 사용하여 리스트에 넣음
-                        self.playerBtns[selected_buying_number].setIsHavingTrue()
-                        self.player.buy()
+                        possible = True                        
+                        for numbers in self.player.picknumber:
+                            if numbers == selected_buying_number:
+                                possible = False
+                        if possible is True:
+                            pickMemento = self.player.createMemento(self.playerBtns[selected_buying_number])
+                            self.player.playerList.append(pickMemento) #메멘토 패턴 사용하여 리스트에 넣음
+                            self.player.picknumber.append(selected_buying_number)
+                            self.playerBtns[selected_buying_number].setIsHavingTrue()
+                            self.player.buy()
+                            self.player.restore(pickMemento)
 
-                    if self.playerBtns[selected_buying_number].isHaving:
-                        self.player.restore(self.player.playerList[selected_buying_number])
 
                     
                 

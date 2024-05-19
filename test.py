@@ -42,7 +42,8 @@ class BuyingButton(Button):
                 if self.rect.collidepoint(event.pos):
                     global selected_buying_number
                     selected_buying_number = self.num
-                    print(self.num,"번 선택") 
+                    print(selected_buying_number,"번 선택") 
+                    # self.num
 
     def setIsHavingTrue(self):
         self.isHaving = True             
